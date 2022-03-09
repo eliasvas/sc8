@@ -82,34 +82,69 @@ void c8_disasm_op(u8 *code_buf, int pc)
 {
 	u8 *code = &code_buf[pc];
 	u8 first_nib = (code[0] >> 4); //because we only want the first 4 bits out of the 8 of the first byte
-	printf("%04x %02x %02x", pc, code[0], code[1]);
+	printf("%04x %02x %02x ", pc, code[0], code[1]);
 	
 	switch(first_nib)
 	{
-		case 0x00: printf("0 not handled yet!");break;
-		case 0x01: printf("1 not handled yet!");break;
-		case 0x02: printf("2 not handled yet!");break;
-		case 0x03: printf("3 not handled yet!");break;
-		case 0x04: printf("4 not handled yet!");break;
-		case 0x05: printf("5 not handled yet!");break;
-		case 0x06:
+		case 0x00: 
+			switch(code[1])
+			{
+				case 0xe0: printf("%-10s", "CLS"); break;
+				case 0xee: printf("%-10s", "RTS"); break;
+				default: printf("UKNOWN 0");break;
+
+			}break;
+		case 0x01: printf("%-10s $%01x%02x", "JUMP", code[0]&0xf, code[1]); break;
+		case 0x02: printf("%-10s $%01x%02x", "CALL", code[0]&0xf, code[1]); break;
+		case 0x03: printf("%-10s V%01x,#$%02x", "SKIP.EQ", code[0]&0xf, code[1]); break;
+		case 0x04: printf("%-10s V%01x,#$%02x", "SKIP.NE", code[0]&0xf, code[1]); break;
+		case 0x05: printf("%-10s V%01x,V%01x", "SKIP.EQ", code[0]&0xf, code[1] >> 4); break;
+		case 0x06: printf("%-10s V%01x,#$%02x", "MVI", code[0]&0xf, code[1]); break;
+		case 0x07: printf("%-10s V%01x,#$%02x", "ADDI", code[0]&0xf, code[1]); break;
+		case 0x08: 
 		{
-			u8 reg = code[0] & 0x0F;
-			printf("%-10s V%01X,#$%02x", "MVI", reg, code[1]);
-		}break;
-		case 0x07: printf("7 not handled yet!");break;
-		case 0x08: printf("8 not handled yet!");break;
-		case 0x09: printf("9 not handled yet!");break;
-		case 0x0a:
-		{
-			u8 addrhi = code[0] & 0x0F;
-             printf("%-10s I,#$%01x%02x", "MVI", addrhi, code[1]);    
-		}break;
-		case 0x0b: printf("b not handled yet!");break;
-		case 0x0c: printf("c not handled yet!");break;
-		case 0x0d: printf("d not handled yet!");break;
-		case 0x0e: printf("e not handled yet!");break;
-		case 0x0f: printf("f not handled yet!");break;
+			u8 lastnib = code[1] >> 4;
+			switch (lastnib)
+			{
+				case 0: printf("%-10s V%01x,V%01x", "MOV.", code[0]&0xf, code[1] >> 4);break;
+				case 1: printf("%-10s V%01x,V%01x", "OR.", code[0]&0xf, code[1] >> 4);break;
+				case 2: printf("%-10s V%01x,V%01x", "AND.", code[0]&0xf, code[1] >> 4);break;
+				case 3: printf("%-10s V%01x,V%01x", "XOR.", code[0]&0xf, code[1] >> 4);break;
+				case 4: printf("%-10s V%01x,V%01x", "ADD.", code[0]&0xf, code[1] >> 4);break;
+				case 5: printf("%-10s V%01x,V%01x,V%01x", "SUB.", code[0]&0xf,code[0]&0xf, code[1] >> 4);break;
+				case 6: printf("%-10s V%01x,V%01x", "SHR.", code[0]&0xf, code[1] >> 4);break;
+				case 7: printf("%-10s V%01x,V%01x,V%01x", "SUB.", code[0]&0xf,code[1]>>4, code[1] >> 4);break;
+				case 0xe: printf("%-10s V%01x,V%01x", "SHL.", code[0]&0xf, code[1] >> 4);break;
+				default: printf("UKNOWN 8");break;
+			}
+		}
+		case 0x9: printf("%-10s V%01x,V%01x", "SKIP.NE", code[0]&0xf, code[1] >> 4);break;
+		case 0xa: printf("%-10s I,#$%01x%02x", "MVI", code[0]&0xf, code[1]);break;
+		case 0xb: printf("%-10s $%01x%02x(V0)", "JUMP", code[0]&0xf, code[1]);break;
+		case 0xc: printf("%-10s V%01x,#$%02x", "RNDMSK", code[0]&0xf, code[1]);break;
+		case 0xd: printf("%-10s V%01x,V%01x,#$%01x", "SPRITE", code[0]&0xf, code[1]>>4, code[1]&0xf);break;
+		case 0xe:
+			switch(code[1])
+			{
+				case 0x9E: printf("%-10s V%01x", "SKIPKEY.Y", code[0]&0xf);break;
+				case 0xA1: printf("%-10s V%01x", "SKIPKEY.N", code[0]&0xf);break;
+				default: printf("UKNOWN E");break;
+			}break;
+		case 0xf:
+			switch(code[1])
+			{
+				case 0x07: printf("%-10s V%01x,DELAY", "MOV", code[0]&0xf);break;
+				case 0x0a: printf("%-10s V%01x", "KEY", code[0]&0xf);break;
+				case 0x15: printf("%-10s DELAY,V%01x", "MOV", code[0]&0xf);break;
+				case 0x18: printf("%-10s SOUND,V%01x", "MOV", code[0]&0xf);break;
+				case 0x1e: printf("%-10s I,V%01x", "ADI", code[0]&0xf);break;
+				case 0x29: printf("%-10s I,V%01x", "SPRITECHAR", code[0]&0xf);break;
+				case 0x33: printf("%-10s (I),V%01x", "MOVBCD", code[0]&0xf);break;
+				case 0x55: printf("%-10s (I),V0-V%01x", "MOVM", code[0]&0xf);break;
+				case 0x65: printf("%-10s V0-V%01x,(I)", "MOVM", code[0]&0xf);break;
+				default: printf("UKNOWN F");break;
+
+			}break;
 	}
 }
 
@@ -134,9 +169,33 @@ void parse_rom(char *filename)
 	while (pc < (fsize + 0x200))
 	{
 		c8_disasm_op(buffer, pc);
-		pc +=2;
+		pc +=2; //2 chars per instruction
 		printf("\n");
 	}
+}
+
+
+typedef struct C8State
+{
+	u8 V[16]; //16 8-bit registers
+	u16 I; //memory address register
+	u16 SP; //stack pointer?
+	u16 PC; //program counter
+	u8 delay; //timer for delay
+	u8 sound; //timer for sound
+	u8 *mem; //RAM
+	u8 *screen; //this is mem[0xF00] 
+}C8State;
+
+static C8State c8state;
+
+void c8_init(void)
+{
+	memset(&c8state, 0, sizeof(c8state));
+	c8state.mem = calloc(1024*4, 1);
+	c8state.screen = &c8state.mem[0xF00];
+	c8state.SP = 0xFA0;
+	c8state.PC = 0x200;
 }
 
 #endif

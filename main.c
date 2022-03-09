@@ -39,6 +39,7 @@ void init(void)
             SDL_Delay(200);
         }
     }
+    c8_init();
 }
 
 b32 update(void)
