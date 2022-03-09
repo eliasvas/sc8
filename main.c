@@ -36,7 +36,7 @@ void init(void)
             screen_surface = SDL_GetWindowSurface( window );
             SDL_FillRect( screen_surface, NULL, SDL_MapRGB( screen_surface->format, 0xAF, 0x2F, 0x3F ) );
             SDL_UpdateWindowSurface( window );
-            SDL_Delay(20);
+            SDL_Delay(200);
         }
     }
 }
