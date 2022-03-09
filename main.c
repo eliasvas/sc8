@@ -54,6 +54,8 @@ int main(void)
     
     
     init();
+	
+	parse_rom("Fishie.ch8");
     while(update());
     
     return 0;

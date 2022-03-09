@@ -78,39 +78,65 @@ typedef char      b8;
 #define array_count(a) (sizeof(a) / sizeof((a)[0]))
 
 
+void c8_disasm_op(u8 *code_buf, int pc)
+{
+	u8 *code = &code_buf[pc];
+	u8 first_nib = (code[0] >> 4); //because we only want the first 4 bits out of the 8 of the first byte
+	printf("%04x %02x %02x", pc, code[0], code[1]);
+	
+	switch(first_nib)
+	{
+		case 0x00: printf("0 not handled yet!");break;
+		case 0x01: printf("1 not handled yet!");break;
+		case 0x02: printf("2 not handled yet!");break;
+		case 0x03: printf("3 not handled yet!");break;
+		case 0x04: printf("4 not handled yet!");break;
+		case 0x05: printf("5 not handled yet!");break;
+		case 0x06:
+		{
+			u8 reg = code[0] & 0x0F;
+			printf("%-10s V%01X,#$%02x", "MVI", reg, code[1]);
+		}break;
+		case 0x07: printf("7 not handled yet!");break;
+		case 0x08: printf("8 not handled yet!");break;
+		case 0x09: printf("9 not handled yet!");break;
+		case 0x0a:
+		{
+			u8 addrhi = code[0] & 0x0F;
+             printf("%-10s I,#$%01x%02x", "MVI", addrhi, code[1]);    
+		}break;
+		case 0x0b: printf("b not handled yet!");break;
+		case 0x0c: printf("c not handled yet!");break;
+		case 0x0d: printf("d not handled yet!");break;
+		case 0x0e: printf("e not handled yet!");break;
+		case 0x0f: printf("f not handled yet!");break;
+	}
+}
 
 
-INLINE b32 is_pow2(u32 val)
+void parse_rom(char *filename)
 {
-    b32 res = ((val & ~(val - 1)) == val);
-    return(res);
+	FILE *f = fopen(filename, "rb");
+	if (f == NULL)
+	{
+		printf("C8 ERROR: Couldn't open rom %s!\n", filename);
+		exit(1);
+	}
+	fseek(f, 0L, SEEK_END);
+	int fsize = ftell(f);
+	fseek(f, 0L, SEEK_SET);
+	
+	int pc = 0x200;
+	//CHIP-8 puts programs at 0x200
+	u8 *buffer = malloc(fsize + 0x200);
+	fread(buffer + 0x200, fsize, 1, f);
+	fclose(f);
+	while (pc < (fsize + 0x200))
+	{
+		c8_disasm_op(buffer, pc);
+		pc +=2;
+		printf("\n");
+	}
 }
-static b32
-char_is_alpha(s32 c)
-{
-    return ((c >='A' && c <= 'Z') || (c >= 'a' && c <= 'z'));
-}
-static b32 char_is_digit(s32 c)
-{
-    return c >= '0'&& c <= '9';
-}
-
-static s32 char_to_lower(s32 c)
-{
-    if (c >= 'A' && c <= 'z')
-    {
-        c += 32;
-    }
-    return c;
-}
-
-static u32 
-str_size(char* str)
-{
-    u32 i = 0;
-    while (str[i] != 0)++i;
-    return i;
-}
-
 
 #endif
